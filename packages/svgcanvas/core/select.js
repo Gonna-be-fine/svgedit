@@ -235,8 +235,14 @@ export class Selector {
       selectedBox.setAttribute('d', dstr)
       this.selectorGroup.setAttribute('transform', xform)
       Object.entries(this.gripCoords).forEach(([dir, coords]) => {
-        selectedGrips[dir].setAttribute('cx', coords[0])
-        selectedGrips[dir].setAttribute('cy', coords[1])
+        if(selectedGrips[dir].nodeName === 'circle') {
+          selectedGrips[dir].setAttribute('cx', coords[0])
+          selectedGrips[dir].setAttribute('cy', coords[1])
+        } else {
+          const {width, height} = selectedGrips[dir].getBBox();
+          selectedGrips[dir].setAttribute('x', coords[0] - width/2);
+          selectedGrips[dir].setAttribute('y', coords[1]- height/2);
+        }
       })
 
       // we want to go 20 pixels in the negative transformed y direction, ignoring scale
@@ -338,27 +344,48 @@ export class SelectorManager {
 
     // add the corner grips
     Object.keys(this.selectorGrips).forEach((dir) => {
-      const grip = svgCanvas.createSVGElement({
-        element: 'circle',
-        attr: {
-          id: ('selectorGrip_resize_' + dir),
-          fill: '#22C',
-          r: gripRadius,
-          style: ('cursor:' + dir + '-resize'),
-          // This expands the mouse-able area of the grips making them
-          // easier to grab with the mouse.
-          // This works in Opera and WebKit, but does not work in Firefox
-          // see https://bugzilla.mozilla.org/show_bug.cgi?id=500174
-          'stroke-width': 2,
-          'pointer-events': 'all'
-        }
-      })
-
-      dataStorage.put(grip, 'dir', dir)
-      dataStorage.put(grip, 'type', 'resize')
-      this.selectorGrips[dir] = grip
-      this.selectorGripsGroup.append(grip)
-    })
+      let grip = null;
+      // 左侧
+      if(['sw'].includes(dir)) {
+        grip = this.createIconSelector({
+          dir,
+          size: 20,
+          href: '../img/reset.svg',
+        })
+      }else if(['se'].includes(dir)) {
+        grip = this.createIconSelector({
+          dir,
+          size: 20,
+          href: '../img/resize.svg',
+        })
+      }else if(['nw'].includes(dir)) {
+        grip = this.createIconSelector({
+          dir,
+          size: 20,
+          href: '../img/scale.svg',
+        })
+      }else {
+        grip = svgCanvas.createSVGElement({
+          element: 'circle',
+          attr: {
+            id: 'selectorGrip_resize_' + dir,
+            fill: '#d8d8d8',
+            r: gripRadius,
+            style: 'cursor:' + dir + '-resize',
+            // This expands the mouse-able area of the grips making them
+            // easier to grab with the mouse.
+            // This works in Opera and WebKit, but does not work in Firefox
+            // see https://bugzilla.mozilla.org/show_bug.cgi?id=500174
+            'stroke-width': 2,
+            'pointer-events': 'all'
+          }
+        });
+      }
+      dataStorage.put(grip, 'dir', dir);
+      dataStorage.put(grip, 'type', 'resize');
+      this.selectorGrips[dir] = grip;
+      this.selectorGripsGroup.append(grip);
+    });
 
     // add rotator elems
     this.rotateGripConnector =
@@ -418,6 +445,26 @@ export class SelectorManager {
     })
     canvasbg.append(rect)
     svgCanvas.getSvgRoot().insertBefore(canvasbg, svgCanvas.getSvgContent())
+  }
+
+
+  createIconSelector ({dir, size, href}) {
+    return svgCanvas.createSVGElement({
+      element: 'image',
+      attr: {
+        id: 'selectorGrip_resize_' + dir,
+        width: size,
+        height: size,
+        href,
+        style: 'cursor: pointer',
+        // This expands the mouse-able area of the grips making them
+        // easier to grab with the mouse.
+        // This works in Opera and WebKit, but does not work in Firefox
+        // see https://bugzilla.mozilla.org/show_bug.cgi?id=500174
+        'stroke-width': 2,
+        'pointer-events': 'all'
+      }
+    });
   }
 
   /**

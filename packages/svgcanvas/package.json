@@ -38,7 +38,9 @@
         "not OperaMini all"
     ],
     "standard": {
-        "ignore": ["dist"],
+        "ignore": [
+            "dist"
+        ],
         "globals": [
             "cy",
             "assert"
@@ -50,7 +52,11 @@
     },
     "scripts": {
         "build": "rollup -c",
+        "dev": "rollup -c -w",
         "prebuild": "standard . && npm i",
         "prepublishOnly": "npm run build"
+    },
+    "dependencies": {
+        "widest-line": "^5.0.0"
     }
 }
