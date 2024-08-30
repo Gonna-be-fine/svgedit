@@ -356,7 +356,7 @@ export class SelectorManager {
         grip = this.createIconSelector({
           dir,
           size: 20,
-          href: '../img/resize.svg',
+          href: '../img/delete.svg',
         })
       }else if(['nw'].includes(dir)) {
         grip = this.createIconSelector({
